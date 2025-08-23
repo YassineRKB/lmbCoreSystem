@@ -20,11 +20,12 @@ class LMB_Admin {
         add_action('wp_ajax_lmb_approve_payment', [$this, 'approve_payment']);
         add_action('wp_ajax_lmb_deny_payment', [$this, 'deny_payment']);
         add_action('wp_ajax_lmb_update_balance', [$this, 'update_balance']);
+        $this->init();
     }
 
     public function init() {
         add_action('admin_menu', array($this, 'admin_menu'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+        //add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
     }
 
     public function admin_menu() {

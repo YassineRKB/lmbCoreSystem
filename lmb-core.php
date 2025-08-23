@@ -50,10 +50,10 @@ class LMB_Core {
         LMB_Form_Handler::init();
         LMB_Ad_Manager::init();
         LMB_Payment_Verifier::init();
-        LMB_Admin::init();
-        LMB_User::init();
-        LMB_Points::init();
-        LMB_User_Dashboard::init();
+        new LMB_Admin();
+        new LMB_User();
+        new LMB_Points();
+        new LMB_User_Dashboard;
         LMB_Invoice_Handler::init();
         LMB_Ajax_Handlers::init();
         LMB_Notification_Manager::init();
