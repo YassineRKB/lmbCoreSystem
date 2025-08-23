@@ -71,7 +71,11 @@ class LMB_Invoice_Handler {
             ],
         ];
         if ($status !== 'all') {
-            $args['post_status'] = $status;
+            $args['meta_query'][] = [
+                'key'     => 'lmb_status',
+                'value'   => $status,
+                'compare' => '=',
+            ];
         }
         return get_posts($args);
     }

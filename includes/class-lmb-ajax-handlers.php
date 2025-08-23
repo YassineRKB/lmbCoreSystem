@@ -34,6 +34,7 @@ class LMB_Ajax_Handlers {
         add_action('wp_ajax_lmb_subscribe_package', [__CLASS__, 'handle_subscribe_package']);
         add_action('wp_ajax_lmb_get_public_newspapers', [__CLASS__, 'handle_get_public_newspapers']);
         add_action('wp_ajax_nopriv_lmb_get_public_newspapers', [__CLASS__, 'handle_get_public_newspapers']);
+        add_action('wp_ajax_lmb_submit_legal_ad', [__CLASS__, 'handle_submit_legal_ad']);
     }
 
     public static function handle_get_admin_stats() {
@@ -99,6 +100,7 @@ class LMB_Ajax_Handlers {
                     'id'      => $ad->ID,
                     'title'   => esc_html($ad->post_title),
                     'content' => esc_html(wp_trim_words($ad->post_content, 20)),
+                    'ad_type' => esc_html(get_post_meta($ad->ID, 'ad_type', true)),
                 ];
             }
         } elseif ($tab === 'pending-payments') {
@@ -148,6 +150,7 @@ class LMB_Ajax_Handlers {
         }
         $payment_id = isset($_POST['payment_id']) ? absint($_POST['payment_id']) : 0;
         if (LMB_Payment_Verifier::approve_payment($payment_id)) {
+            global $wpdb;
             $payment = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}lmb_points WHERE id = %d", $payment_id));
             if ($payment) {
                 update_post_meta($payment->reference_id, 'lmb_status', 'paid');
@@ -217,14 +220,14 @@ class LMB_Ajax_Handlers {
         }
         if (isset($_POST['ad_type']) && !empty($_POST['ad_type'])) {
             $args['meta_query'][] = [
-                'key'     => 'lmb_ad_type',
+                'key'     => 'ad_type',
                 'value'   => sanitize_text_field($_POST['ad_type']),
                 'compare' => '=',
             ];
         }
         if (isset($_POST['company_name']) && !empty($_POST['company_name'])) {
             $args['meta_query'][] = [
-                'key'     => 'lmb_company_name',
+                'key'     => 'company_name',
                 'value'   => sanitize_text_field($_POST['company_name']),
                 'compare' => 'LIKE',
             ];
@@ -237,7 +240,8 @@ class LMB_Ajax_Handlers {
             $data[] = [
                 'id'          => $ad->ID,
                 'content'     => esc_html(wp_trim_words($ad->post_content, 20)),
-                'status'      => esc_html($ad->post_status),
+                'status'      => esc_html(get_post_meta($ad->ID, 'lmb_status', true)),
+                'ad_type'     => esc_html(get_post_meta($ad->ID, 'ad_type', true)),
                 'approved_by'  => $approved_by ? esc_html(get_userdata($approved_by)->display_name) : '-',
                 'timestamp'   => esc_html($ad->post_date),
             ];
@@ -355,7 +359,7 @@ class LMB_Ajax_Handlers {
             wp_send_json_error(['message' => __('Failed to create newspaper.', 'lmb-core')]);
         }
 
-        update_post_meta($post_id, 'lmb_newspaper_file', $upload['url']);
+        update_post_meta($post_id, 'newspaper_pdf', $upload['url']);
         LMB_Notification_Manager::add_notification(0, sprintf(__('New newspaper %s uploaded.', 'lmb-core'), $title), 'newspaper_uploaded');
         wp_send_json_success(['message' => __('Newspaper uploaded.', 'lmb-core')]);
     }
@@ -389,7 +393,7 @@ class LMB_Ajax_Handlers {
             $data[] = [
                 'id'    => $n->ID,
                 'title' => esc_html($n->post_title),
-                'url'   => esc_url(get_post_meta($n->ID, 'lmb_newspaper_file', true)),
+                'url'   => esc_url(get_post_meta($n->ID, 'newspaper_pdf', true)),
                 'date'  => esc_html($n->post_date),
             ];
         }
@@ -582,18 +586,41 @@ class LMB_Ajax_Handlers {
         $newspapers = get_posts($args);
         $data = [];
         foreach ($newspapers as $n) {
-            $url = get_post_meta($n->ID, 'lmb_newspaper_file', true);
+            $url = get_post_meta($n->ID, 'newspaper_pdf', true);
             $data[] = [
                 'id'    => $n->ID,
                 'title' => esc_html($n->post_title),
                 'url'   => esc_url($url),
                 'date'  => esc_html($n->post_date),
             ];
-            // Log download interaction
             if (isset($_POST['download_id']) && absint($_POST['download_id']) === $n->ID) {
                 LMB_Notification_Manager::log_public_interaction('newspaper_download', sprintf(__('Newspaper %s downloaded.', 'lmb-core'), $n->post_title));
             }
         }
         wp_send_json_success($data);
+    }
+
+    public static function handle_submit_legal_ad() {
+        check_ajax_referer('lmb_submit_legal_ad_nonce', 'nonce');
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('You must be logged in to submit an ad.', 'lmb-core')]);
+        }
+
+        $form_data = [];
+        foreach ($_POST as $key => $value) {
+            if ($key !== 'action' && $key !== 'nonce') {
+                $form_data[$key] = is_array($value) ? array_map('sanitize_text_field', $value) : sanitize_text_field($value);
+            }
+        }
+
+        try {
+            $post_id = LMB_Form_Handler::create_legal_ad($form_data);
+            update_post_meta($post_id, 'lmb_status', 'pending_review');
+            LMB_Notification_Manager::add_notification(get_current_user_id(), __('Your legal ad has been submitted for review.', 'lmb-core'), 'ad_submitted');
+            LMB_Notification_Manager::add_notification(0, sprintf(__('New legal ad #%d submitted by %s.', 'lmb-core'), $post_id, wp_get_current_user()->display_name), 'ad_submitted');
+            wp_send_json_success(['message' => __('Legal ad submitted for review.', 'lmb-core'), 'post_id' => $post_id]);
+        } catch (Exception $e) {
+            wp_send_json_error(['message' => $e->getMessage()]);
+        }
     }
 }

@@ -8,7 +8,6 @@
  * Requires PHP: 7.4
  * Text Domain: lmb-core
  */
-
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -25,6 +24,7 @@ class LMB_Core {
 
     private function load_dependencies() {
         require_once LMB_CORE_PATH . 'includes/class-lmb-cpt.php';
+        require_once LMB_CORE_PATH . 'includes/class-lmb-acf.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-access-control.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-database-manager.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-error-handler.php';
@@ -42,6 +42,7 @@ class LMB_Core {
 
     private function init_classes() {
         LMB_CPT::init();
+        LMB_ACF::init();
         LMB_Access_Control::init();
         LMB_Database_Manager::init();
         LMB_Error_Handler::init();
@@ -63,6 +64,7 @@ class LMB_Core {
             wp_enqueue_script('lmb-core', LMB_CORE_URL . 'assets/js/lmb-core.js', ['jquery'], '1.0.0', true);
             wp_localize_script('lmb-core', 'lmbAjax', [
                 'ajaxurl' => admin_url('admin-ajax.php'),
+                'submit_legal_ad_nonce' => wp_create_nonce('lmb_submit_legal_ad_nonce'),
             ]);
 
             if (current_user_can('manage_options')) {
