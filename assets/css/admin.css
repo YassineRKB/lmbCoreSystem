@@ -1,0 +1,229 @@
+/**
+ * LMB Admin Styles
+ *
+ * Styles for admin widgets.
+ */
+
+/* Admin Stats */
+.lmb-admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+.lmb-stat-box {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+.lmb-stat-box h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+}
+.lmb-stat {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Admin Actions */
+.lmb-admin-actions .lmb-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.lmb-admin-actions .lmb-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+.lmb-admin-actions .lmb-tab.active {
+    background: #007cba;
+    color: #fff;
+}
+.lmb-admin-actions .lmb-tab-content ul {
+    list-style: none;
+    padding: 0;
+}
+.lmb-admin-actions .lmb-tab-content li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.lmb-admin-actions .lmb-action-btn {
+    margin: 10px;
+    padding: 10px 20px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Balance Manipulation */
+.lmb-balance-manipulation form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+}
+.lmb-balance-manipulation input,
+.lmb-balance-manipulation button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-balance-manipulation button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+/* Legal Ads List */
+.lmb-legal-ads-list form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.lmb-legal-ads-list input {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-legal-ads-list button {
+    padding: 10px 20px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.lmb-legal-ads-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.lmb-legal-ads-list th, .lmb-legal-ads-list td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+/* Notifications */
+.lmb-notifications ul {
+    list-style: none;
+    padding: 0;
+}
+.lmb-notifications li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.lmb-notifications .lmb-mark-read {
+    padding: 5px 10px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Packages Editor */
+.lmb-packages-editor form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+    margin-bottom: 20px;
+}
+.lmb-packages-editor input,
+.lmb-packages-editor button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-packages-editor button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+.lmb-packages-editor ul {
+    list-style: none;
+    padding: 0;
+}
+.lmb-packages-editor li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Upload Accuse */
+.lmb-upload-accuse form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+}
+.lmb-upload-accuse input,
+.lmb-upload-accuse button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-upload-accuse button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+/* Upload Newspaper */
+.lmb-upload-newspaper .lmb-newspaper-form,
+.lmb-upload-newspaper .lmb-newspaper-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+    margin-bottom: 20px;
+}
+.lmb-upload-newspaper input,
+.lmb-upload-newspaper button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-upload-newspaper button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+.lmb-upload-newspaper ul {
+    list-style: none;
+    padding: 0;
+}
+.lmb-upload-newspaper li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* User List */
+.lmb-user-list form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.lmb-user-list input {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-user-list button {
+    padding: 10px 20px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.lmb-user-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.lmb-user-list th, .lmb-user-list td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
