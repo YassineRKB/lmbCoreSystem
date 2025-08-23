@@ -22,6 +22,23 @@ class LMB_Admin {
         add_action('wp_ajax_lmb_update_balance', [$this, 'update_balance']);
     }
 
+    public function init() {
+        add_action('admin_menu', array($this, 'admin_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_scripts'));
+    }
+
+    public function admin_menu() {
+        add_menu_page(
+            'LMB Core',
+            'LMB Core',
+            'manage_options',
+            'lmb-core',
+            array($this, 'admin_page'),
+            'dashicons-admin-generic',
+            20
+        );
+    }
+
     /**
      * Restrict admin dashboard page to administrators only.
      */

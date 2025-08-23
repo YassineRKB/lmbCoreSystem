@@ -33,6 +33,7 @@ class LMB_Core {
         require_once LMB_CORE_PATH . 'includes/class-lmb-payment-verifier.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-admin.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-user.php';
+        require_once LMB_CORE_PATH . 'includes/class-lmb-points.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-user-dashboard.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-invoice-handler.php';
         require_once LMB_CORE_PATH . 'includes/class-lmb-ajax-handlers.php';
@@ -51,6 +52,7 @@ class LMB_Core {
         LMB_Payment_Verifier::init();
         LMB_Admin::init();
         LMB_User::init();
+        LMB_Points::init();
         LMB_User_Dashboard::init();
         LMB_Invoice_Handler::init();
         LMB_Ajax_Handlers::init();
