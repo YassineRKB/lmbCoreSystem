@@ -1,7 +1,7 @@
 /**
  * LMB Core Frontend Scripts
  *
- * Handles AJAX interactions for user widgets.
+ * Handles AJAX interactions for user and public widgets.
  */
 
 jQuery(document).ready(function($) {
@@ -153,7 +153,7 @@ jQuery(document).ready(function($) {
         });
     });
 
-    // Notifications Widget (shared with admin)
+    // Notifications Widget
     $('.lmb-notifications').each(function() {
         var $widget = $(this);
         var nonce = $widget.data('nonce');
@@ -189,5 +189,57 @@ jQuery(document).ready(function($) {
                 }
             });
         });
+    });
+
+    // Newspaper Widget
+    $('.lmb-newspaper').each(function() {
+        var $widget = $(this);
+        var nonce = $widget.data('nonce');
+
+        function loadNewspapers() {
+            var data = {
+                action: 'lmb_get_public_newspapers',
+                nonce: nonce,
+                search: $widget.find('[name="search"]').val(),
+                sort: $widget.find('[name="sort"]').val(),
+                start_date: $widget.find('[name="start_date"]').val(),
+                end_date: $widget.find('[name="end_date"]').val()
+            };
+            $.ajax({
+                url: lmbAjax.ajaxurl,
+                type: 'POST',
+                data: data,
+                success: function(response) {
+                    if (response.success) {
+                        $widget.find('.lmb-newspapers-list').html(response.data.map(item => `
+                            <li><a href="${item.url}" target="_blank" class="lmb-download-newspaper" data-id="${item.id}">${item.title}</a> (${item.date})</li>
+                        `).join(''));
+                    }
+                }
+            });
+        }
+
+        $widget.find('.lmb-newspaper-filter').submit(function(e) {
+            e.preventDefault();
+            loadNewspapers();
+        });
+
+        $widget.on('click', '.lmb-download-newspaper', function(e) {
+            var download_id = $(this).data('id');
+            $.ajax({
+                url: lmbAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'lmb_get_public_newspapers',
+                    nonce: nonce,
+                    download_id: download_id
+                },
+                success: function(response) {
+                    // Download proceeds via browser
+                }
+            });
+        });
+
+        loadNewspapers();
     });
 });

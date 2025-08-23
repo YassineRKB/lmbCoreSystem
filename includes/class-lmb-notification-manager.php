@@ -39,4 +39,9 @@ class LMB_Notification_Manager {
         $table = $wpdb->prefix . 'lmb_notifications';
         $wpdb->update($table, ['status' => 'read'], ['id' => absint($notification_id)]);
     }
+
+    public static function log_public_interaction($action, $details) {
+        // Log public interactions (e.g., newspaper download) for admin visibility
+        self::add_notification(0, sprintf(__('Public interaction: %s - %s', 'lmb-core'), $action, $details), 'public_interaction');
+    }
 }

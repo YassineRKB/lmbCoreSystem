@@ -32,6 +32,8 @@ class LMB_Ajax_Handlers {
         add_action('wp_ajax_lmb_get_invoices', [__CLASS__, 'handle_get_invoices']);
         add_action('wp_ajax_lmb_upload_bank_proof', [__CLASS__, 'handle_upload_bank_proof']);
         add_action('wp_ajax_lmb_subscribe_package', [__CLASS__, 'handle_subscribe_package']);
+        add_action('wp_ajax_lmb_get_public_newspapers', [__CLASS__, 'handle_get_public_newspapers']);
+        add_action('wp_ajax_nopriv_lmb_get_public_newspapers', [__CLASS__, 'handle_get_public_newspapers']);
     }
 
     public static function handle_get_admin_stats() {
@@ -146,6 +148,10 @@ class LMB_Ajax_Handlers {
         }
         $payment_id = isset($_POST['payment_id']) ? absint($_POST['payment_id']) : 0;
         if (LMB_Payment_Verifier::approve_payment($payment_id)) {
+            $payment = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}lmb_points WHERE id = %d", $payment_id));
+            if ($payment) {
+                update_post_meta($payment->reference_id, 'lmb_status', 'paid');
+            }
             wp_send_json_success(['message' => __('Payment approved.', 'lmb-core')]);
         } else {
             wp_send_json_error(['message' => __('Failed to approve payment.', 'lmb-core')]);
@@ -350,6 +356,7 @@ class LMB_Ajax_Handlers {
         }
 
         update_post_meta($post_id, 'lmb_newspaper_file', $upload['url']);
+        LMB_Notification_Manager::add_notification(0, sprintf(__('New newspaper %s uploaded.', 'lmb-core'), $title), 'newspaper_uploaded');
         wp_send_json_success(['message' => __('Newspaper uploaded.', 'lmb-core')]);
     }
 
@@ -551,5 +558,42 @@ class LMB_Ajax_Handlers {
         } else {
             wp_send_json_error(['message' => __('Failed to create invoice.', 'lmb-core')]);
         }
+    }
+
+    public static function handle_get_public_newspapers() {
+        check_ajax_referer('lmb_newspaper_nonce', 'nonce');
+        $args = [
+            'post_type'      => 'lmb_newspaper',
+            'posts_per_page' => -1,
+            'orderby'        => 'date',
+            'order'          => isset($_POST['sort']) && $_POST['sort'] === 'oldest' ? 'ASC' : 'DESC',
+        ];
+
+        if (isset($_POST['search']) && !empty($_POST['search'])) {
+            $args['s'] = sanitize_text_field($_POST['search']);
+        }
+        if (isset($_POST['start_date']) && !empty($_POST['start_date'])) {
+            $args['date_query']['after'] = sanitize_text_field($_POST['start_date']);
+        }
+        if (isset($_POST['end_date']) && !empty($_POST['end_date'])) {
+            $args['date_query']['before'] = sanitize_text_field($_POST['end_date']);
+        }
+
+        $newspapers = get_posts($args);
+        $data = [];
+        foreach ($newspapers as $n) {
+            $url = get_post_meta($n->ID, 'lmb_newspaper_file', true);
+            $data[] = [
+                'id'    => $n->ID,
+                'title' => esc_html($n->post_title),
+                'url'   => esc_url($url),
+                'date'  => esc_html($n->post_date),
+            ];
+            // Log download interaction
+            if (isset($_POST['download_id']) && absint($_POST['download_id']) === $n->ID) {
+                LMB_Notification_Manager::log_public_interaction('newspaper_download', sprintf(__('Newspaper %s downloaded.', 'lmb-core'), $n->post_title));
+            }
+        }
+        wp_send_json_success($data);
     }
 }

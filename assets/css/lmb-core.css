@@ -1,7 +1,7 @@
 /**
  * LMB Core Frontend Styles
  *
- * Styles for user widgets.
+ * Styles for user and public widgets.
  */
 
 /* User Stats */
@@ -105,7 +105,7 @@
     cursor: pointer;
 }
 
-/* Notifications (shared with admin) */
+/* Notifications */
 .lmb-notifications ul {
     list-style: none;
     padding: 0;
@@ -121,4 +121,38 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+}
+
+/* Newspaper */
+.lmb-newspaper .lmb-newspaper-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.lmb-newspaper input,
+.lmb-newspaper select,
+.lmb-newspaper button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-newspaper button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+.lmb-newspaper ul {
+    list-style: none;
+    padding: 0;
+}
+.lmb-newspaper li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.lmb-newspaper a {
+    text-decoration: none;
+    color: #007cba;
+}
+.lmb-newspaper a:hover {
+    text-decoration: underline;
 }
