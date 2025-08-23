@@ -28,6 +28,10 @@ class LMB_Ajax_Handlers {
         add_action('wp_ajax_lmb_upload_newspaper', [__CLASS__, 'handle_upload_newspaper']);
         add_action('wp_ajax_lmb_get_newspapers', [__CLASS__, 'handle_get_newspapers']);
         add_action('wp_ajax_lmb_search_users', [__CLASS__, 'handle_search_users']);
+        add_action('wp_ajax_lmb_get_user_stats', [__CLASS__, 'handle_get_user_stats']);
+        add_action('wp_ajax_lmb_get_invoices', [__CLASS__, 'handle_get_invoices']);
+        add_action('wp_ajax_lmb_upload_bank_proof', [__CLASS__, 'handle_upload_bank_proof']);
+        add_action('wp_ajax_lmb_subscribe_package', [__CLASS__, 'handle_subscribe_package']);
     }
 
     public static function handle_get_admin_stats() {
@@ -79,8 +83,7 @@ class LMB_Ajax_Handlers {
 
         if ($tab === 'feed') {
             $data['feed'] = [];
-            // Fetch recent actions (simplified; could query logs or notifications)
-            $notifications = LMB_Notification_Manager::get_notifications(0); // 0 for admin notifications
+            $notifications = LMB_Notification_Manager::get_notifications(0);
             foreach ($notifications as $n) {
                 $data['feed'][] = [
                     'message' => esc_html($n->message),
@@ -278,7 +281,12 @@ class LMB_Ajax_Handlers {
         $package_price = isset($_POST['package_price']) ? floatval($_POST['package_price']) : 0;
         $package_points = isset($_POST['package_points']) ? absint($_POST['package_points']) : 0;
 
-        if (!$package_name || !$package_price || !$package_points) {
+        if (!$package_name) {
+            $packages = get_option('lmb_packages', []);
+            wp_send_json_success(['packages' => array_values($packages)]);
+        }
+
+        if (!$package_price || !$package_points) {
             wp_send_json_error(['message' => __('Invalid input.', 'lmb-core')]);
         }
 
@@ -415,5 +423,133 @@ class LMB_Ajax_Handlers {
             ];
         }
         wp_send_json_success($data);
+    }
+
+    public static function handle_get_user_stats() {
+        check_ajax_referer('lmb_user_stats_nonce', 'nonce');
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('Unauthorized', 'lmb-core')]);
+        }
+
+        $user_id = get_current_user_id();
+        global $wpdb;
+
+        $balance = $wpdb->get_var($wpdb->prepare(
+            "SELECT SUM(points) FROM {$wpdb->prefix}lmb_points WHERE user_id = %d",
+            $user_id
+        ));
+
+        $drafts = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'lmb_legal_ad' AND post_status = 'draft' AND post_author = %d",
+            $user_id
+        ));
+
+        $published = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'lmb_legal_ad' AND post_status = 'publish' AND post_author = %d",
+            $user_id
+        ));
+
+        wp_send_json_success([
+            'balance'   => (int)$balance,
+            'drafts'    => (int)$drafts,
+            'published' => (int)$published,
+        ]);
+    }
+
+    public static function handle_get_invoices() {
+        check_ajax_referer('lmb_invoices_nonce', 'nonce');
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('Unauthorized', 'lmb-core')]);
+        }
+
+        $user_id = get_current_user_id();
+        $tab = isset($_POST['tab']) ? sanitize_text_field($_POST['tab']) : 'invoices';
+        $status = isset($_POST['status']) ? sanitize_text_field($_POST['status']) : 'all';
+        $data = [];
+
+        if ($tab === 'accuse') {
+            $accuse = LMB_Invoice_Handler::get_user_accuse($user_id, $status);
+            foreach ($accuse as $a) {
+                $data['accuse'][] = [
+                    'id'    => $a->ID,
+                    'title' => esc_html($a->post_title),
+                    'url'   => esc_url(get_post_meta($a->ID, 'lmb_accuse_file', true)),
+                    'date'  => esc_html($a->post_date),
+                ];
+            }
+        } else {
+            $invoices = LMB_Invoice_Handler::get_user_invoices($user_id, $status);
+            foreach ($invoices as $i) {
+                $data['invoices'][] = [
+                    'id'       => $i->ID,
+                    'number'   => esc_html($i->post_title),
+                    'status'   => esc_html(get_post_meta($i->ID, 'lmb_status', true)),
+                    'price'    => floatval(get_post_meta($i->ID, 'lmb_package_price', true)) . ' MAD',
+                    'package'  => esc_html(get_post_meta($i->ID, 'lmb_package_name', true)),
+                    'reference' => esc_html(get_post_meta($i->ID, 'lmb_payment_reference', true)),
+                    'date'     => esc_html($i->post_date),
+                ];
+            }
+        }
+
+        wp_send_json_success($data);
+    }
+
+    public static function handle_upload_bank_proof() {
+        check_ajax_referer('lmb_upload_bank_proof_nonce', 'nonce');
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('Unauthorized', 'lmb-core')]);
+        }
+
+        $invoice_id = isset($_POST['invoice_id']) ? absint($_POST['invoice_id']) : 0;
+        if (!$invoice_id || !isset($_FILES['bank_proof_file'])) {
+            wp_send_json_error(['message' => __('Invalid input.', 'lmb-core')]);
+        }
+
+        $invoice = get_post($invoice_id);
+        if (!$invoice || $invoice->post_author != get_current_user_id() || $invoice->post_type != 'lmb_invoice') {
+            wp_send_json_error(['message' => __('Invalid invoice.', 'lmb-core')]);
+        }
+
+        $upload = wp_handle_upload($_FILES['bank_proof_file'], ['test_form' => false, 'mimes' => ['pdf' => 'application/pdf', 'jpg' => 'image/jpeg', 'png' => 'image/png']]);
+        if (isset($upload['error'])) {
+            wp_send_json_error(['message' => $upload['error']]);
+        }
+
+        update_post_meta($invoice_id, 'lmb_bank_proof_file', $upload['url']);
+        global $wpdb;
+        $points = get_post_meta($invoice_id, 'lmb_package_points', true);
+        $wpdb->insert($wpdb->prefix . 'lmb_points', [
+            'user_id'         => get_current_user_id(),
+            'points'          => absint($points),
+            'transaction_type' => 'payment_pending',
+            'transaction_date' => current_time('mysql'),
+            'reference_id'    => $invoice_id,
+        ]);
+
+        LMB_Notification_Manager::add_notification(0, sprintf(__('User %s uploaded bank proof for invoice %s.', 'lmb-core'), get_userdata(get_current_user_id())->display_name, $invoice->post_title), 'payment_pending');
+        wp_send_json_success(['message' => __('Bank proof uploaded.', 'lmb-core')]);
+    }
+
+    public static function handle_subscribe_package() {
+        check_ajax_referer('lmb_subscribe_package_nonce', 'nonce');
+        if (!is_user_logged_in()) {
+            wp_send_json_error(['message' => __('Unauthorized', 'lmb-core')]);
+        }
+
+        $package_id = isset($_POST['package_id']) ? absint($_POST['package_id']) : 0;
+        $packages = get_option('lmb_packages', []);
+        if (!$package_id || !isset($packages[$package_id])) {
+            wp_send_json_error(['message' => __('Invalid package.', 'lmb-core')]);
+        }
+
+        $package = $packages[$package_id];
+        $invoice_id = LMB_Invoice_Handler::create_invoice(get_current_user_id(), $package_id, $package['name'], $package['price']);
+        if ($invoice_id) {
+            update_post_meta($invoice_id, 'lmb_package_points', $package['points']);
+            wp_send_json_success(['message' => __('Invoice created. Please upload bank proof.', 'lmb-core'), 'packages' => array_values($packages)]);
+        } else {
+            wp_send_json_error(['message' => __('Failed to create invoice.', 'lmb-core')]);
+        }
     }
 }

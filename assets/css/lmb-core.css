@@ -1,0 +1,124 @@
+/**
+ * LMB Core Frontend Styles
+ *
+ * Styles for user widgets.
+ */
+
+/* User Stats */
+.lmb-user-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+.lmb-user-stats .lmb-stat-box {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+.lmb-user-stats .lmb-stat-box h3 {
+    margin: 0 0 10px;
+    font-size: 16px;
+}
+.lmb-user-stats .lmb-stat {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Invoices */
+.lmb-invoices .lmb-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.lmb-invoices .lmb-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+.lmb-invoices .lmb-tab.active {
+    background: #007cba;
+    color: #fff;
+}
+.lmb-invoices .lmb-invoices-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.lmb-invoices select,
+.lmb-invoices button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-invoices button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+.lmb-invoices ul {
+    list-style: none;
+    padding: 0;
+}
+.lmb-invoices li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Upload Bank Proof */
+.lmb-upload-bank-proof form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+}
+.lmb-upload-bank-proof select,
+.lmb-upload-bank-proof input,
+.lmb-upload-bank-proof button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-upload-bank-proof button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+/* Subscribe Package */
+.lmb-subscribe-package form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 300px;
+}
+.lmb-subscribe-package select,
+.lmb-subscribe-package button {
+    padding: 10px;
+    border-radius: 5px;
+}
+.lmb-subscribe-package button {
+    background: #007cba;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+/* Notifications (shared with admin) */
+.lmb-notifications ul {
+    list-style: none;
+    padding: 0;
+}
+.lmb-notifications li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+.lmb-notifications .lmb-mark-read {
+    padding: 5px 10px;
+    background: #007cba;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

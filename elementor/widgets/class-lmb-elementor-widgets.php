@@ -53,5 +53,16 @@ class LMB_Elementor_Widgets {
         $widgets_manager->register(new LMB_Upload_Accuse_Widget());
         $widgets_manager->register(new LMB_Upload_Newspaper_Widget());
         $widgets_manager->register(new LMB_User_List_Widget());
+
+        // User Widgets
+        require_once LMB_CORE_PATH . 'elementor/widgets/user/class-lmb-user-stats-widget.php';
+        require_once LMB_CORE_PATH . 'elementor/widgets/user/class-lmb-invoices-widget.php';
+        require_once LMB_CORE_PATH . 'elementor/widgets/user/class-lmb-upload-bank-proof-widget.php';
+        require_once LMB_CORE_PATH . 'elementor/widgets/user/class-lmb-subscribe-package-widget.php';
+
+        $widgets_manager->register(new LMB_User_Stats_Widget());
+        $widgets_manager->register(new LMB_Invoices_Widget());
+        $widgets_manager->register(new LMB_Upload_Bank_Proof_Widget());
+        $widgets_manager->register(new LMB_Subscribe_Package_Widget());
     }
 }
