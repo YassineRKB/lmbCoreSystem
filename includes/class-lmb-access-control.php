@@ -1,63 +1,44 @@
 <?php
-if (!defined('ABSPATH')) exit;
-
 class LMB_Access_Control {
     public static function init() {
-        add_action('template_redirect', [__CLASS__, 'protect_routes']);
+        add_action('init', [__CLASS__, 'register_capabilities']);
     }
 
-    public static function protect_routes() {
-        // Get protected pages configuration
-        $protected_pages = get_option('lmb_protected_pages', []);
-        
-        // Check if current page is protected
-        $current_page_id = get_queried_object_id();
-        if (isset($protected_pages[$current_page_id])) {
-            $protection_level = $protected_pages[$current_page_id];
-            
-            switch ($protection_level) {
-                case 'logged_in':
-                    if (!is_user_logged_in()) {
-                        wp_redirect(wp_login_url(get_permalink()));
-                        exit;
-                    }
-                    break;
-                    
-                case 'admin_only':
-                    if (!current_user_can('manage_options')) {
-                        if (is_user_logged_in()) {
-                            wp_redirect(home_url());
-                        } else {
-                            wp_redirect(wp_login_url(get_permalink()));
-                        }
-                        exit;
-                    }
-                    break;
-            }
+    public static function register_capabilities() {
+        $admin_role = get_role('administrator');
+        $capabilities = [
+            'edit_lmb_legal_ad',
+            'edit_lmb_legal_ads',
+            'publish_lmb_legal_ads',
+            'read_lmb_legal_ad',
+            'delete_lmb_legal_ad',
+            'edit_others_lmb_legal_ads',
+            'delete_others_lmb_legal_ads',
+            'edit_lmb_newspaper',
+            'edit_lmb_newspapers',
+            'publish_lmb_newspapers',
+            'read_lmb_newspaper',
+            'delete_lmb_newspaper',
+            'edit_others_lmb_newspapers',
+            'delete_others_lmb_newspapers',
+            'edit_lmb_invoice',
+            'edit_lmb_invoices',
+            'publish_lmb_invoices',
+            'read_lmb_invoice',
+            'delete_lmb_invoice',
+            'edit_others_lmb_invoices',
+            'delete_others_lmb_invoices',
+        ];
+
+        foreach ($capabilities as $cap) {
+            $admin_role->add_cap($cap);
         }
 
-        // Legacy protection for specific pages (keep for backward compatibility)
-        if (is_page('dashboard') && !is_user_logged_in()) {
-            wp_redirect(wp_login_url(get_permalink()));
-            exit;
-        }
-        if (is_page('constitision-sarl') && !is_user_logged_in()) {
-            wp_redirect(wp_login_url(get_permalink()));
-            exit;
-        }
-        if (is_page('constitision-sarl-au') && !is_user_logged_in()) {
-            wp_redirect(wp_login_url(get_permalink()));
-            exit;
-        }
-        
-
-        if (is_page('administration') && !current_user_can('manage_options')) {
-            if (is_user_logged_in()) {
-                wp_redirect(home_url('dashboard'));
-            } else {
-                wp_redirect(wp_login_url(get_permalink()));
-            }
-            exit;
-        }
+        // User role capabilities
+        $user_role = get_role('subscriber');
+        $user_role->add_cap('read_lmb_legal_ad');
+        $user_role->add_cap('edit_lmb_legal_ad');
+        $user_role->add_cap('publish_lmb_legal_ads');
+        $user_role->add_cap('read_lmb_invoice');
     }
 }
